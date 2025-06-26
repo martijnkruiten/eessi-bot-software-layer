@@ -17,7 +17,17 @@ import sys
 from pyghee.utils import log
 
 # Local application imports (anything from EESSI/eessi-bot-software-layer)
+from tools import config
 from tools.filter import EESSIBotActionFilter, EESSIBotActionFilterError
+
+
+def _get_log_file():
+    """
+    Helper function to get the configured log file path
+    """
+    cfg = config.read_config()
+    event_handler_cfg = cfg[config.SECTION_EVENT_HANDLER]
+    return event_handler_cfg.get(config.EVENT_HANDLER_SETTING_LOG_PATH)
 
 
 def contains_any_bot_command(body):
@@ -44,16 +54,17 @@ def get_bot_command(line):
         command (string): the command if any found or None
     """
     fn = sys._getframe().f_code.co_name
+    logfile = _get_log_file()
 
-    log(f"{fn}(): searching for bot command in '{line}'")
+    log(f"{fn}(): searching for bot command in '{line}'", logfile)
     regex = re.compile('^bot:[ ]?(.*)$')
     match = regex.search(line)
     if match:
         cmd = match.group(1).rstrip()
-        log(f"{fn}(): Bot command found in '{line}': {cmd}")
+        log(f"{fn}(): Bot command found in '{line}': {cmd}", logfile)
         return cmd
     else:
-        log(f"{fn}(): No bot command found using pattern '{regex.pattern}' in: {line}")
+        log(f"{fn}(): No bot command found using pattern '{regex.pattern}' in: {line}", logfile)
         return None
 
 
@@ -92,11 +103,13 @@ class EESSIBotCommand:
             try:
                 self.action_filters = EESSIBotActionFilter(arg_str)
             except EESSIBotActionFilterError as err:
-                log(f"ERROR: EESSIBotActionFilterError - {err.args}")
+                logfile = _get_log_file()
+                log(f"ERROR: EESSIBotActionFilterError - {err.args}", logfile)
                 self.action_filters = None
                 raise EESSIBotCommandError("invalid action filter")
             except Exception as err:
-                log(f"Unexpected err={err}, type(err)={type(err)}")
+                logfile = _get_log_file()
+                log(f"Unexpected err={err}, type(err)={type(err)}", logfile)
                 raise
         else:
             self.action_filters = EESSIBotActionFilter("")

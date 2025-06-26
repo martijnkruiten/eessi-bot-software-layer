@@ -17,7 +17,16 @@ import re
 from pyghee.utils import log
 
 # Local application imports (anything from EESSI/eessi-bot-software-layer)
-# (none yet)
+from tools import config
+
+
+def _get_log_file():
+    """
+    Helper function to get the configured log file path
+    """
+    cfg = config.read_config()
+    event_handler_cfg = cfg[config.SECTION_EVENT_HANDLER]
+    return event_handler_cfg.get(config.EVENT_HANDLER_SETTING_LOG_PATH)
 
 
 # NOTE because one can use any prefix of one of the components below to
@@ -86,7 +95,8 @@ class EESSIBotActionFilter:
             except EESSIBotActionFilterError:
                 raise
             except Exception as err:
-                log(f"Unexpected err={err}, type(err)={type(err)}")
+                logfile = _get_log_file()
+                log(f"Unexpected err={err}, type(err)={type(err)}", logfile)
                 raise
 
     def clear_all(self):

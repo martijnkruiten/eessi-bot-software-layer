@@ -312,7 +312,10 @@ def get_repo_cfg(cfg):
         repo_cfg[repo_id][cvmfs_repository.REPOS_CFG_CONFIG_MAP] = config_map
 
     # print full repo_cfg for debugging purposes
-    log(f"{fn}(): complete repo_cfg that was just read: {json.dumps(repo_cfg, indent=4)}")
+    cfg_for_log = config.read_config()
+    event_handler_cfg = cfg_for_log[config.SECTION_EVENT_HANDLER]
+    logfile = event_handler_cfg.get(config.EVENT_HANDLER_SETTING_LOG_PATH)
+    log(f"{fn}(): complete repo_cfg that was just read: {json.dumps(repo_cfg, indent=4)}", logfile)
 
     return repo_cfg
 
